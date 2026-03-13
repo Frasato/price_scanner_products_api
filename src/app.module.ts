@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PrecosModule } from './product.module';
+import { IpService } from './services/ip.service';
+import { IpController } from './controllers/ip.controller';
 
 @Module({
   imports: [
@@ -14,7 +16,9 @@ import { PrecosModule } from './product.module';
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: false,
     }),
-    PrecosModule
+    PrecosModule,
   ],
+  providers: [IpService],
+  controllers: [IpController]
 })
 export class AppModule {}

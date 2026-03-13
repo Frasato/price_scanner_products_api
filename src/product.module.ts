@@ -5,9 +5,12 @@ import { Embalagem } from './models/embalagem.entity';
 import { ItemCadernoOferta } from './models/item-caderno-oferta.entity';
 import { PrecosController } from './controllers/products.controller';
 import { PrecosService } from './services/products.service';
+import { CadernoOferta } from './models/cadernooferta.entity';
+import { UnidadeNegocio } from './models/unidadenegocio.entity';
+import { UnidadeNegocioParticipanteCadernoOferta } from './models/unidadenegocioparticipantecaderno.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Produto, Embalagem, ItemCadernoOferta])],
+  imports: [TypeOrmModule.forFeature([Produto, Embalagem, ItemCadernoOferta, CadernoOferta, UnidadeNegocio, UnidadeNegocioParticipanteCadernoOferta])],
   controllers: [PrecosController],
   providers: [PrecosService],
 })

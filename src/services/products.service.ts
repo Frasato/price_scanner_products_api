@@ -3,6 +3,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Embalagem } from '../models/embalagem.entity';
 import { ItemCadernoOferta } from '../models/item-caderno-oferta.entity';
+import { CadernoOferta } from '../models/cadernooferta.entity';
+import { UnidadeNegocio } from '../models/unidadenegocio.entity';
+import { UnidadeNegocioParticipanteCadernoOferta } from '../models/unidadenegocioparticipantecaderno.entity';
 
 function toNumberOrNull(v: string | null | undefined) {
   if (v === null || v === undefined) return null;
@@ -18,6 +21,9 @@ export class PrecosService {
 
     @InjectRepository(ItemCadernoOferta)
     private readonly itemOfertaRepo: Repository<ItemCadernoOferta>,
+
+    @InjectRepository(UnidadeNegocio)
+    private readonly unidadeNegocioRepo: Repository<UnidadeNegocio>,
   ) {}
 
   async buscarPorCodigoBarras(codigobarras: string) {
@@ -25,23 +31,42 @@ export class PrecosService {
       .createQueryBuilder('e')
       .innerJoinAndSelect('e.produto', 'p')
       .where('e.codigobarras = :codigobarras', { codigobarras })
-      .select([
-        'e.id',
-        'e.codigobarras',
-        'e.precovenda',
-        'p.id',
-        'p.descricao',
-      ])
+      .select(['e.id', 'e.codigobarras', 'e.precovenda', 'p.id', 'p.descricao'])
       .getOne();
 
     if (!embalagem) {
       throw new NotFoundException(`Embalagem não encontrada para ${codigobarras}`);
     }
-    const item = await this.itemOfertaRepo.findOne({
-      where: { embalagemId: embalagem.id },
-      select: { precooferta: true, id: true, embalagemId: true },
-      order: { id: 'DESC' },
+
+    const unidade = await this.unidadeNegocioRepo.findOne({
+      where: { codigo: '01' },
+      select: { id: true },
     });
+
+    if (!unidade) {
+      throw new NotFoundException(`Unidade de negócio com código 01 não encontrada`);
+    }
+
+    const item = await this.itemOfertaRepo
+      .createQueryBuilder('i')
+      .innerJoin(
+        CadernoOferta,
+        'c',
+        'c.id = i.cadernoofertaid',
+      )
+      .innerJoin(
+        UnidadeNegocioParticipanteCadernoOferta,
+        'up',
+        'up.cadernoofertaid = c.id AND up.unidadenegocioid = :unidadeId',
+        { unidadeId: unidade.id },
+      )
+      .where('i.embalagemid = :embalagemId', { embalagemId: embalagem.id })
+      .andWhere('c.status = :status', { status: 'A' })
+      .andWhere('c.datahorainicial IS NOT NULL')
+      .andWhere('c.datahorafinal IS NULL')
+      .select(['i.id', 'i.embalagemid', 'i.precooferta'])
+      .orderBy('i.id', 'DESC')
+      .getOne();
 
     return {
       produto: embalagem.produto?.descricao,

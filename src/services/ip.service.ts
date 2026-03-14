@@ -9,7 +9,11 @@ export class IpService{
             this.ipListMemory.push(ip);
             return {message: "SUCCESS!"}
         }
-        return {message: "ERROR: IP already exist"}
+        return {
+            message: "ERROR: IP already exist",
+            address: ip
+            
+        }
     }
 
     getIpList(){

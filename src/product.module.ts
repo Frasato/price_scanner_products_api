@@ -8,10 +8,18 @@ import { PrecosService } from './services/products.service';
 import { CadernoOferta } from './models/cadernooferta.entity';
 import { UnidadeNegocio } from './models/unidadenegocio.entity';
 import { UnidadeNegocioParticipanteCadernoOferta } from './models/unidadenegocioparticipantecaderno.entity';
+import { EmbalagemRepository } from './repositories/embalagem.repository';
+import { ItemOfertRepository } from './repositories/itemOferta.repository';
+import { UnidadeNegocioRepository } from './repositories/unidadeNegocio.repository';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Produto, Embalagem, ItemCadernoOferta, CadernoOferta, UnidadeNegocio, UnidadeNegocioParticipanteCadernoOferta])],
   controllers: [PrecosController],
-  providers: [PrecosService],
+  providers: [
+    PrecosService,
+    EmbalagemRepository,
+    ItemOfertRepository,
+    UnidadeNegocioRepository
+  ],
 })
 export class PrecosModule {}
